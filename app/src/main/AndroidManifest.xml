@@ -20,11 +20,6 @@
                 <action android:name="android.net.conn.TETHER_STATE_CHANGED"/>
             </intent-filter>
         </service>
-        <service android:name=".DnsmasqService" android:enabled="true" android:exported="false" android:process=":dnsmasq" />
-        <service android:name=".TPWSService" android:enabled="true" android:exported="false" android:process=":tpws" />
-        <service android:name=".Socks5Service" android:enabled="true" android:exported="false" android:process=":socks5" />
-        <service android:name=".TPROXYService" android:enabled="true" android:exported="false" android:process=":tproxy" />
-        <service android:name=".TPROXY4Service" android:enabled="true" android:exported="false" android:process=":tproxy4" />
         <receiver android:enabled="true" android:name=".BootUpReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
