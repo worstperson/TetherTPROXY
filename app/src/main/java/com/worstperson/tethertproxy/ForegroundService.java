@@ -184,6 +184,8 @@ public class ForegroundService extends Service {
 
         startForeground(1, notification.build());
 
+        Script.addRules(ipv4Addr);
+
         if (!HandlerCompat.hasCallbacks(handler, delayedRestore)) {
             handler.postDelayed(delayedRestore, 5000);
         }
@@ -229,6 +231,7 @@ public class ForegroundService extends Service {
             edit.apply();
             Script.stopDnsmasq(ipv4Addr, iface);
         }
+        Script.removeRules(ipv4Addr);
 
         Toast.makeText(this, "Service destroyed by user.", Toast.LENGTH_LONG).show();
     }

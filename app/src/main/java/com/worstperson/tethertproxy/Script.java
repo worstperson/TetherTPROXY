@@ -68,6 +68,26 @@ public class Script {
         shellCommand("ndc network route add 99 " + iface + " " + ipv4Prefix + ".0/24");
     }
 
+    static void addRules(String ipv4Addr) {
+        String ipv4Prefix = ipv4Addr.substring(0, ipv4Addr.lastIndexOf("."));
+        // Redirect IPv4 incoming DHCP Broadcast requests
+        if (!Shell.cmd("iptables -t nat -C PREROUTING -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767").exec().isSuccess()) {
+            shellCommand("iptables -t nat -I PREROUTING -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767");
+        }
+        // Redirect IPv4 incoming DNS requests
+        if (!Shell.cmd("iptables -t nat -C PREROUTING -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353").exec().isSuccess()) {
+            shellCommand("iptables -t nat -I PREROUTING -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353");
+        }
+    }
+
+    static void removeRules(String ipv4Addr) {
+        String ipv4Prefix = ipv4Addr.substring(0, ipv4Addr.lastIndexOf("."));
+        // Redirect IPv4 incoming DHCP Broadcast requests
+        shellCommand("iptables -t nat -D PREROUTING -i -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767");
+        // Redirect IPv4 incoming DNS requests
+        shellCommand("iptables -t nat -D PREROUTING -i -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353");
+    }
+
     static void configureTether(String ipv4Addr, String iface) {
         if (!Shell.cmd("ip addr | grep " + iface + " | grep " + ipv4Addr).exec().isSuccess()) {
             configureAddress(ipv4Addr, iface);
@@ -76,11 +96,6 @@ public class Script {
             // FIXME: this case is not handled
             Log.i("TetherTPROXY", "Interface already configured!?!");
         }
-        String ipv4Prefix = ipv4Addr.substring(0, ipv4Addr.lastIndexOf("."));
-        // Redirect IPv4 incoming DHCP Broadcast requests
-        shellCommand("iptables -t nat -I PREROUTING -i " + iface + " -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767");
-        // Redirect IPv4 incoming DNS requests
-        shellCommand("iptables -t nat -I PREROUTING -i " + iface + " -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353");
     }
 
     static void startDnsmasq(String ipv4Addr, String iface, String appData) {
@@ -109,9 +124,5 @@ public class Script {
 
     static boolean isDnsmasqRunning(String pid) {
         return Shell.cmd("[ -d /proc/" + pid + " ]").exec().isSuccess();
-    }
-
-    static void killDnsmasq() {
-        shellCommand("killall dnsmasq." + Build.SUPPORTED_ABIS[0]);
     }
 }
