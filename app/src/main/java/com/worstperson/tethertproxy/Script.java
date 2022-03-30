@@ -105,12 +105,8 @@ public class Script {
         shellCommand(appData + "/dnsmasq." + Build.SUPPORTED_ABIS[0] + " --interface=" + iface + " --keep-in-foreground --no-resolv --no-poll --domain-needed --bogus-priv --dhcp-authoritative --port=5353 --dhcp-alternate-port=6767,68 --dhcp-range=" + ipv4Prefix + ".10," + ipv4Prefix + ".99,1h --dhcp-option=option:dns-server," + ipv4Addr + " --server=8.8.8.8 --server=8.8.4.4 --dhcp-leasefile=" + appData + "/dnsmasq.leases --pid-file=" + appData + "/dnsmasq.pid &");
     }
 
-    static void stopDnsmasq(String ipv4Addr, String iface) {
-        String ipv4Prefix = ipv4Addr.substring(0, ipv4Addr.lastIndexOf("."));
+    static void stopDnsmasq() {
         shellCommand("killall dnsmasq." + Build.SUPPORTED_ABIS[0]);
-        shellCommand("iptables -t nat -D PREROUTING -i " + iface + " -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767");
-        shellCommand("iptables -t nat -D PREROUTING -i " + iface + " -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353");
-        shellCommand("ip rule delete priority 18000");
     }
 
     static String getDnsmasqPid(String appData) {

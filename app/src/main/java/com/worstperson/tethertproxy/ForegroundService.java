@@ -77,7 +77,7 @@ public class ForegroundService extends Service {
                         SharedPreferences.Editor edit = sharedPref.edit();
                         edit.putString("iface", null);
                         edit.apply();
-                        Script.stopDnsmasq(ipv4Addr, iface);
+                        Script.stopDnsmasq();
                         if (!HandlerCompat.hasCallbacks(handler2, delayedWatchdog)) {
                             handler2.removeCallbacks(delayedWatchdog);
                         }
@@ -168,7 +168,7 @@ public class ForegroundService extends Service {
             SharedPreferences.Editor edit = sharedPref.edit();
             edit.putString("iface", null);
             edit.apply();
-            Script.stopDnsmasq(ipv4Addr, iface);
+            Script.stopDnsmasq();
         }
 
         Toast.makeText(this, "Service started by user.", Toast.LENGTH_LONG).show();
@@ -216,7 +216,7 @@ public class ForegroundService extends Service {
             SharedPreferences.Editor edit = sharedPref.edit();
             edit.putString("iface", null);
             edit.apply();
-            Script.stopDnsmasq(ipv4Addr, iface);
+            Script.stopDnsmasq();
         }
         Script.removeRules(ipv4Addr);
 
