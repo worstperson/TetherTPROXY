@@ -66,7 +66,7 @@ public class ForegroundService extends Service {
                         Script.configureTether(ipv4Addr, iface);
                         Script.startDnsmasq(ipv4Addr, iface, getFilesDir().getPath());
                         if (!HandlerCompat.hasCallbacks(handler2, delayedWatchdog)) {
-                            handler2.postDelayed(delayedWatchdog, 10000);
+                            handler2.postDelayed(delayedWatchdog, 5000);
                         }
                     } else {
                         Log.i("TetherTPROXY", "Tether is already applied...");
@@ -102,15 +102,19 @@ public class ForegroundService extends Service {
                     if (!Script.isDnsmasqRunning(pid)) {
                         Log.i("TetherTPROXY", "Restarting Dnsmasq");
                         Script.startDnsmasq(ipv4Addr, iface, getFilesDir().getPath());
-                    }
-                    if (!HandlerCompat.hasCallbacks(handler2, delayedWatchdog)) {
-                        handler2.postDelayed(delayedWatchdog, 10000);
+                        if (!HandlerCompat.hasCallbacks(handler2, delayedWatchdog)) {
+                            handler2.postDelayed(delayedWatchdog, 5000);
+                        }
+                    } else {
+                        if (!HandlerCompat.hasCallbacks(handler2, delayedWatchdog)) {
+                            handler2.postDelayed(delayedWatchdog, 30000);
+                        }
                     }
                 } else {
                     Log.i("TetherTPROXY", "Try Restarting Dnsmasq");
                     Script.startDnsmasq(ipv4Addr, iface, getFilesDir().getPath());
                     if (!HandlerCompat.hasCallbacks(handler2, delayedWatchdog)) {
-                        handler2.postDelayed(delayedWatchdog, 10000);
+                        handler2.postDelayed(delayedWatchdog, 5000);
                     }
                 }
             }
@@ -126,19 +130,6 @@ public class ForegroundService extends Service {
                 handler.postDelayed(delayedRestore, 5000);
             } else {
                 Log.i("TetherTPROXY", "Tether restore callback already scheduled");
-            }
-        }
-    };
-
-    private final BroadcastReceiver RestartReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (isStarted) {
-                String name = intent.getStringExtra("name");
-                Log.i("TetherTPROXY", "Restarting service " + name);
-                Intent i = new Intent("com.worstperson.tethertproxy." + name + ".START");
-                i.setPackage("com.worstperson.tethertproxy");
-                sendBroadcast(i);
             }
         }
     };
@@ -191,7 +182,6 @@ public class ForegroundService extends Service {
         }
 
         registerReceiver(TetherReceiver, new IntentFilter("android.net.conn.TETHER_STATE_CHANGED"));
-        registerReceiver(RestartReceiver, new IntentFilter("com.worstperson.tethertproxy.ForegroundService.CHECK"));
 
         return Service.START_STICKY;
     }
@@ -208,9 +198,6 @@ public class ForegroundService extends Service {
 
         try {
             unregisterReceiver(TetherReceiver);
-        } catch (IllegalArgumentException ignored) {}
-        try {
-            unregisterReceiver(RestartReceiver);
         } catch (IllegalArgumentException ignored) {}
 
         if (!HandlerCompat.hasCallbacks(handler, delayedRestore)) {
