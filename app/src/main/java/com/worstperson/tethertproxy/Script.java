@@ -83,9 +83,9 @@ public class Script {
     static void removeRules(String ipv4Addr) {
         String ipv4Prefix = ipv4Addr.substring(0, ipv4Addr.lastIndexOf("."));
         // Redirect IPv4 incoming DHCP Broadcast requests
-        shellCommand("iptables -t nat -D PREROUTING -i -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767");
+        shellCommand("iptables -t nat -D PREROUTING -s 0.0.0.0 -d 255.255.255.255 -p udp --dport 67 -j DNAT --to-destination 255.255.255.255:6767");
         // Redirect IPv4 incoming DNS requests
-        shellCommand("iptables -t nat -D PREROUTING -i -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353");
+        shellCommand("iptables -t nat -D PREROUTING -s " + ipv4Prefix + ".0/24 -d " + ipv4Addr + " -p udp --dport 53 -j DNAT --to-destination " + ipv4Addr + ":5353");
     }
 
     static void configureTether(String ipv4Addr, String iface) {
