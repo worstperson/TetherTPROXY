@@ -47,17 +47,16 @@ public class Script {
         return null;
     }
 
-    static String getTetherInterface() {
-        String address = getDnsmasqBind();
-        if (address != null && address.length() == 13) {
-            for (String message : Shell.cmd("cat /proc/net/route | grep " + address.substring(2,8) + " | awk '{print $1}'").exec().getOut()) {
+    static String getTetherInterface(String dnsBind) {
+        if (dnsBind != null && dnsBind.length() == 13) {
+            for (String message : Shell.cmd("cat /proc/net/route | grep " + dnsBind.substring(2,8) + " | awk '{print $1}'").exec().getOut()) {
                 return message;
             }
         }
         return null;
     }
 
-    static private void configureAddress(String ipv4Addr, String iface) {
+    static void configureAddress(String ipv4Addr, String iface) {
         Log.i("TetherTPROXY", "Setting IP address");
         shellCommand("ifconfig " + iface + " " + ipv4Addr + " netmask 255.255.255.0 up");
     }
