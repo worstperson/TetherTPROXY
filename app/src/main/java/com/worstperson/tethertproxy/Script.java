@@ -37,20 +37,28 @@ public class Script {
 
     // Dnsmasq looses it's bind when the address changes, so we need a separate check for localhost
     static boolean isDnsmasqRunning() {
-        return Shell.cmd("cat /proc/net/tcp | grep 0100007F:0035").exec().isSuccess();
+        //return Shell.cmd("cat /proc/net/tcp | grep 0100007F:0035").exec().isSuccess();
+        return Shell.cmd("netstat -lntp | grep '127.0.0.1:53'").exec().isSuccess();
     }
 
     static String getDnsmasqBind() {
-        for (String message : Shell.cmd("cat /proc/net/tcp | grep A8C0:0035 | awk '{print $2}'").exec().getOut()) {
-            return message;
+        //for (String message : Shell.cmd("cat /proc/net/tcp | grep A8C0:0035 | awk '{print $2}'").exec().getOut()) {
+        for (String message : Shell.cmd("netstat -lntp | grep ':53' | grep '192.168' | awk '{print $4}'").exec().getOut()) {
+            if (message.indexOf(":") > 0) {
+                return message.substring(0, message.indexOf(":"));
+            }
         }
         return null;
     }
 
     static String getTetherInterface(String dnsBind) {
-        if (dnsBind != null && dnsBind.length() == 13) {
-            for (String message : Shell.cmd("cat /proc/net/route | grep " + dnsBind.substring(2,8) + " | awk '{print $1}'").exec().getOut()) {
-                return message;
+        if (dnsBind != null) {// && dnsBind.length() == 13) {
+            //for (String message : Shell.cmd("cat /proc/net/route | grep " + dnsBind.substring(2,8) + " | awk '{print $1}'").exec().getOut()) {
+            for (String message : Shell.cmd("ip address show to " + dnsBind + " | awk '{print $2}'").exec().getOut()) {
+                if (message.indexOf(":") > 0 ) {
+                    return message.substring(0, message.indexOf(":"));
+                }
+                return null;
             }
         }
         return null;

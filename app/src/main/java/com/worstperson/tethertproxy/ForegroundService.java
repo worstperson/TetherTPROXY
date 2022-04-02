@@ -50,7 +50,7 @@ public class ForegroundService extends Service {
             .setSilent(true)
             .setContentTitle("Service is running");
 
-    String getAddress(String dnsBind) {
+    /*String getAddress(String dnsBind) {
         StringBuilder address = new StringBuilder();
         for (int i = 6; i >= 0; i -= 2) {
             address.append(Integer.parseInt(dnsBind.substring(i, i + 2), 16));
@@ -59,7 +59,7 @@ public class ForegroundService extends Service {
             }
         }
         return address.toString();
-    }
+    }*/
 
     final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable delayedRestore = new Runnable() {
@@ -69,15 +69,13 @@ public class ForegroundService extends Service {
                 SharedPreferences sharedPref = getSharedPreferences("Settings", Context.MODE_PRIVATE);
                 String ipv4Addr = sharedPref.getString("ipv4Addr", "10.0.0.1");
                 String iface = sharedPref.getString("iface", null);
-                String oldAddress = sharedPref.getString("oldAddress", "192.168.42.129");
                 if (Script.isDnsmasqRunning()) {
                     String dnsBind;
                     if (iface == null && (dnsBind = Script.getDnsmasqBind()) != null && (iface = Script.getTetherInterface(dnsBind)) != null) {
-                        oldAddress = getAddress(dnsBind);
-                        Log.i("TetherTPROXY", "Original IP Address: " + oldAddress);
+                        Log.i("TetherTPROXY", "Original IP Address: " + dnsBind);
                         SharedPreferences.Editor edit = sharedPref.edit();
                         edit.putString("iface", iface);
-                        edit.putString("oldAddress", oldAddress);
+                        edit.putString("oldAddress", dnsBind);
                         edit.apply();
                         Script.configureTether(ipv4Addr, iface);
                         Script.startDnsmasq(ipv4Addr, iface, getFilesDir().getPath());
